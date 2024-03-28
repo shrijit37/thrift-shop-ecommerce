@@ -2,7 +2,7 @@ import path from "path";
 import express from "express";   
 import dotenv from "dotenv"
 import cookieParser from "cookie-parser";
-
+import userRoutes from "./routes/userRoute.js"; 
 
 import connectDb from "./config/db.js";
 
@@ -17,9 +17,8 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 
 
-app.get('/', (req, res) =>{
-    res.send("hi there!");
-})
+//routes 
+app.use("/api/users",userRoutes)
 
 app.listen(port, ()=>{
     console.log(`server running on port ${port}`);

@@ -2,9 +2,9 @@ import "../src/index.css";
 
 const App = () => {
   return (
-    <button>
-      save me
-    </button>
+    <>
+    <h1>App</h1>
+    </>
   )
 }
 
