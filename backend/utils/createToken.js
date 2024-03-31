@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+//token is generated and stored in the browser environment and used by other routes
+
 const generateToken = (res,userId)=>{
     const token = jwt.sign({userId},process.env.JWT_SECRET,{expiresIn:"30d"});
     

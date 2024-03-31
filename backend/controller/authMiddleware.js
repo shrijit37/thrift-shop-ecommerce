@@ -13,7 +13,6 @@ const authenticate = asyncHandler(async (req, res, next) => {
     // Read jwt token 
     token = req.cookies.jwt;
     // Logging after token assignment
-
     if (token) {
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -35,5 +34,6 @@ const authorizeAdmin = (req, res, next) => {
         res.status(401).json({ message: "Not an admin" });
     }
 };
+
 
 export { authenticate, authorizeAdmin };

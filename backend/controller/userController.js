@@ -50,21 +50,20 @@ const createUser =  asyncHandler(async(req,res)=>{
 
 const loginUser = asyncHandler(async (req,res)=>{
     const {email,password} = req.body;
-
     const existingUser = await User.findOne({email});
-
+    
     if (!existingUser) {
         return res.status(404).json({ message: "User not found" });
     }
     if(existingUser){
-
+        
         //checking for valid password
         const isPasswordValid = await bcrypt.compare(password,existingUser.password);
-
         if(isPasswordValid){
+            
+
+            //token is generated and stored in the browser session
             createToken(res,existingUser._id);
-
-
             res.status(200).json({
                 id:existingUser._id,
                 username : existingUser.username,
@@ -113,12 +112,99 @@ const getCurrentUserProfile = asyncHandler(async (req,res,next)=>{
         throw new Error("User not found");
     }
 });
-
-const updateCurrentUserProfile = asyncHandler(async (req,res,next)=>{
-
+const updateCurrentUserProfile = asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.user._id);
+    if (user) {
+        user.username = req.body.username || user.username;
+        user.email = req.body.email || user.email;
+        if (req.body.password) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(req.body.password, salt);
+            user.password = hashedPassword; 
+        }
+
+        const updatedUser = await user.save();
+
+        res.json({
+            _id: updatedUser._id,
+            username: updatedUser.username,
+            email: updatedUser.email,
+            admin: updatedUser.admin
+        });
+    } else {
+        res.status(404);
+        throw new Error("User not found");
+    }
+});
+
+const deleteUserById = asyncHandler(async (req, res, next) => {
+    const user = await User.findById(req.params.id);
+    if (user) {
+        if (user.admin) {
+            res.status(400);
+            throw new Error("Cannot delete admin");
+        } else {
+            await User.findByIdAndDelete(user._id); 
+            res.json("User deleted");
+        }
+    } else {
+        res.status(404);
+        throw new Error("User not found");
+    }
+});
+
+const getUserById = asyncHandler(async (req, res, next) =>{
+
+    const user = await User.findById(req.params.id);
+    if(user){
+        res.json({
+            username: user.username,
+            email: user.email,
+            password: user.password,
+            admin: user.admin
+        });
+    }
+    else{
+        res.status(404);
+        throw new Error("User not found");
+    }
 })
 
+const updateUserById = asyncHandler(async (req, res, next) =>{
 
-export {createUser,loginUser,logoutUser,getAllUsers,getCurrentUserProfile,updateCurrentUserProfile};
+    const user = await User.findById(req.params.id);
+    if (user) {
+        user.username = req.body.username || user.username;
+        user.email = req.body.email || user.email;
+        user.admin = Boolean(req.body.admin) || user.admin;
+        if (req.body.password) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(req.body.password, salt);
+            user.password = hashedPassword; 
+        }
+
+        const updatedUser = await user.save();
+
+        res.json({
+            _id: updatedUser._id,
+            username: updatedUser.username,
+            email: updatedUser.email,
+            admin: updatedUser.admin
+        });
+    } else {
+        res.status(404);
+        throw new Error("User not found");
+    }
+})
+export {
+    createUser,
+    loginUser,
+    logoutUser,
+    getAllUsers,
+    getCurrentUserProfile,
+    updateCurrentUserProfile,
+    deleteUserById,
+    getUserById,
+    updateUserById
+};
 
