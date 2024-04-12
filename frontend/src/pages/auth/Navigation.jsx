@@ -1,5 +1,11 @@
 import { useState } from "react";
 
+//redux imports 
+import {useDispatch, useSelector } from "react-redux";
+import {useLogoutMutation } from "../../redux/api/usersApiSlice"
+import { logout } from "../../redux/features/auth/authSlice";
+
+
 //icons
 import {
   AiOutlineHome,
@@ -17,6 +23,24 @@ import { Link, useNavigate } from "react-router-dom";
 import "./Navigation.css";
 
 const Navigation = () => {
+
+  const { userInfo } = useSelector(state => state.auth)
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [logoutApiCall] = useLogoutMutation();
+
+  const logoutHandler = async () => {
+    try {
+      await logoutApiCall().unwrap();
+      dispatch(logout());
+      navigate('/login');
+    }
+    catch (err) {
+      console.log(err)
+    }
+  }
+
   const [dropdownOpen, setdropdownOpen] = useState(false);
   const [showSidebar, setshowSidebar] = useState(false);
 
@@ -36,7 +60,7 @@ const Navigation = () => {
       className={
         showSidebar
           ? "hidden"
-          : " xl:flex lg:flex md:hidden sm:hidden flex-col justify-around p-4 text-white bg-[#000] w-[4%] hover:w-[15%] h-[100vh]  fixed"
+          : " xl:flex lg:flex md:hidden sm:hidden flex-col justify-between p-4 text-white bg-[#000] w-[4%] hover:w-[15%] h-[100vh]  fixed"
       }
       id="navigation-container"
     >
@@ -76,27 +100,33 @@ const Navigation = () => {
         </Link>
       </div>
 
-        <ul>
-          <li>
-            <Link
-              to="/login"
-              className="flex items-center transition-transform transform hover:translate-x-10"
-            >
-              <AiOutlineLogin className="mr-2 mt-[3rem]" size={26} />
-              <span className="hidden nav-item-name mt-[3rem]">Log-in</span>{" "}
-            </Link>
-          </li>
+      <div className="relative">
+        <button onClick={toggleDropdown} className="flex items-center text-grey-8000 focus:outline-none">
+          {userInfo?<span className="text-white">{userInfo.username}</span> : <></>}
+        </button>
+      </div>
 
-          <li>
-            <Link
-              to="/register"
-              className="flex items-center transition-transform transform hover:translate-x-10"
-            >
-              <AiOutlineUserAdd className="mr-2 mt-[3rem]" size={26} />
-              <span className="hidden nav-item-name mt-[3rem]">Register</span>{" "}
-            </Link>
-          </li>
-        </ul>
+      <ul>
+        <li>
+          <Link
+            to="/login"
+            className="flex items-center transition-transform transform hover:translate-x-10"
+          >
+            <AiOutlineLogin className="mr-2 mt-[3rem]" size={26} />
+            <span className="hidden nav-item-name mt-[3rem]">Log-in</span>{" "}
+          </Link>
+        </li>
+
+        <li>
+          <Link
+            to="/register"
+            className="flex items-center transition-transform transform hover:translate-x-10"
+          >
+            <AiOutlineUserAdd className="mr-2 mt-[3rem]" size={26} />
+            <span className="hidden nav-item-name mt-[3rem]">Register</span>{" "}
+          </Link>
+        </li>
+      </ul>
     </div>
   );
 };
